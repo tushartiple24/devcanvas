@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-export default function CanvasNavbar() {
+export default function CanvasNavbar({ darkMode, setDarkMode }) {
   const navigate = useNavigate();
 
   return (
@@ -26,8 +26,12 @@ export default function CanvasNavbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="p-2 rounded-xl text-slate-400 hover:bg-slate-800/50 transition-all active:scale-95">
-          🌙
+        <button
+          className="p-2 rounded-xl text-slate-400 hover:bg-slate-800/50 transition-all active:scale-95"
+          onClick={() => setDarkMode && setDarkMode((v) => !v)}
+          aria-label="Toggle dark mode"
+        >
+          {darkMode ? '🌙' : '☀️'}
         </button>
         <div className="h-6 w-[1px] bg-slate-700/30 mx-2"></div>
         <button className="px-4 py-2 rounded-xl text-sm font-medium text-slate-200 border border-slate-700/40 hover:bg-slate-800/50 transition-all active:scale-95">

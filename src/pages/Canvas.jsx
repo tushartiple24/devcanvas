@@ -4,12 +4,15 @@ import Canvas from '../components/canvas/Canvas';
 import CanvasControls from '../components/canvas/CanvasControls';
 import PropertiesPanel from '../components/canvas/PropertiesPanel';
 import CanvasFooter from '../components/canvas/CanvasFooter';
+import ExportButton from '../components/canvas/ExportButton';
+import useCanvasStore from '../store/useCanvasStore';
 
-export default function CanvasPage() {
+export default function CanvasPage(props) {
+  const { nodes, edges } = useCanvasStore();
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-slate-900">
       {/* Navbar */}
-      <CanvasNavbar />
+      <CanvasNavbar darkMode={props.darkMode} setDarkMode={props.setDarkMode} />
 
       {/* Main Layout */}
       <main className="relative h-screen w-screen flex overflow-hidden pt-20">
@@ -27,6 +30,11 @@ export default function CanvasPage() {
               opacity: 0.15,
             }}
           ></div>
+
+          {/* Export Button */}
+          <div className="absolute top-4 right-4 z-40">
+            <ExportButton targetId="reactflow-canvas-export-area" nodes={nodes} edges={edges} />
+          </div>
 
           {/* React Flow Canvas */}
           <Canvas />

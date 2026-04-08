@@ -16,7 +16,7 @@ import BugNode from '../nodes/BugNode';
 import ExternalNode from '../nodes/ExternalNode';
 
 export default function Canvas() {
-  const { nodes, edges, setNodes, setEdges } = useCanvasStore();
+  const { nodes, edges, setNodes, setEdges, setSelectedNode } = useCanvasStore();
 
   const nodeTypes = useMemo(
     () => ({
@@ -44,20 +44,27 @@ export default function Canvas() {
     [edges, setEdges]
   );
 
+  const onNodeClick = useCallback((event, node) => {
+    setSelectedNode(node.id);
+  }, [setSelectedNode]);
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-      >
-        <Background />
-        <Controls />
-        <MiniMap />
-      </ReactFlow>
+      <div id="reactflow-canvas-export-area" style={{ width: '100%', height: '100%' }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={onNodeClick}
+        >
+          <Background />
+          <Controls />
+          <MiniMap />
+        </ReactFlow>
+      </div>
     </div>
   );
 }

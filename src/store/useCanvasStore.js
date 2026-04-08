@@ -8,7 +8,7 @@ const nodeDefaults = {
   external: { label: 'External Service', description: 'Third-party API' },
 };
 
-const useCanvasStore = create((set) => ({
+const useCanvasStore = create((set, get) => ({
   nodes: [
     {
       id: '1',
@@ -19,8 +19,60 @@ const useCanvasStore = create((set) => ({
   ],
   edges: [],
 
-  setNodes: (nodes) => set({ nodes }),
-  setEdges: (edges) => set({ edges }),
+  selectedNodeId: null,
+  setSelectedNode: (id) => set({ selectedNodeId: id }),
+
+  // Undo/Redo stacks
+  undoStack: [],
+  redoStack: [],
+
+  // Push current state to undo stack
+  pushToUndo: () => {
+    const { nodes, edges, undoStack } = get();
+    set({ undoStack: [...undoStack, { nodes: JSON.parse(JSON.stringify(nodes)), edges: JSON.parse(JSON.stringify(edges)) }], redoStack: [] });
+  },
+
+  undo: () => {
+    const { undoStack, redoStack, nodes, edges } = get();
+    if (undoStack.length === 0) return;
+    const prev = undoStack[undoStack.length - 1];
+    set({
+      nodes: prev.nodes,
+      edges: prev.edges,
+      undoStack: undoStack.slice(0, -1),
+      redoStack: [...redoStack, { nodes: JSON.parse(JSON.stringify(nodes)), edges: JSON.parse(JSON.stringify(edges)) }],
+    });
+  },
+
+  redo: () => {
+    const { undoStack, redoStack, nodes, edges } = get();
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    set({
+      nodes: next.nodes,
+      edges: next.edges,
+      undoStack: [...undoStack, { nodes: JSON.parse(JSON.stringify(nodes)), edges: JSON.parse(JSON.stringify(edges)) }],
+      redoStack: redoStack.slice(0, -1),
+    });
+  },
+
+  setNodes: (nodes, skipUndo = false) => {
+    if (!skipUndo) get().pushToUndo();
+    set({ nodes });
+  },
+  setEdges: (edges, skipUndo = false) => {
+    if (!skipUndo) get().pushToUndo();
+    set({ edges });
+  },
+
+  updateNodeProperties: (id, data) => {
+    get().pushToUndo();
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
+        node.id === id ? { ...node, data: { ...node.data, ...data } } : node
+      ),
+    }));
+  },
 
   addNode: (type = 'api') =>
     set((state) => {
@@ -38,6 +90,8 @@ const useCanvasStore = create((set) => ({
           y: Math.random() * 300 + 100,
         },
       };
+      // Push to undo stack
+      get().pushToUndo();
       return { nodes: [...state.nodes, newNode] };
     }),
 }));
